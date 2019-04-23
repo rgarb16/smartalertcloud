@@ -132,26 +132,6 @@ def update_sensor(sensor_id):
         return "", 500
 
 
-@app.route("/api/v1/sensor/<sensor_id>", methods=['DELETE'])
-def remove_sensor(sensor_id):
-    """
-       Function to remove sensor data.
-       """
-    try:
-        # Delete the sensor
-        delete_sensor = collection.delete_one({"sensor_id": int(sensor_id)})
-
-        if delete_sensor.deleted_count > 0 :
-            # Prepare the response
-            return "", 204
-        else:
-            # Resource Not found
-            return "", 404
-    except:
-        # Error while trying to delete the resource
-        # Add message for debugging purpose
-        return "", 500
-
 
 @app.errorhandler(404)
 def page_not_found(e):
