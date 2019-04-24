@@ -5,5 +5,5 @@ import urllib
 
 DATABASE = MongoClient()['sensordb'] # DB_NAME
 DEBUG = True
-uri = "mongodb://sensor_user1:"+urllib.quote("user@123")+"@127.0.0.1/sensordb"
+uri = "mongodb://XXXX:"+urllib.quote("XXXX")+"@127.0.0.1/sensordb"
 client = MongoClient(uri)
