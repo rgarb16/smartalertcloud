@@ -7,7 +7,13 @@ from flask import request, jsonify
 import json
 import ast
 import imp
-
+import calendar
+import datetime
+from bson.objectid import ObjectId
+"""
+ 04/24/2019 
+   - Added functionality to generate report
+"""
 
 # Import the helpers module
 helper_module = imp.load_source('*', './app/helpers.py')
@@ -19,7 +25,6 @@ collection = db.sensor
 
 @app.route("/")
 def get_initial_response():
-    """Welcome message for the API."""
     # Message to the user
     message = {
         'apiVersion': 'v1.0',
@@ -28,7 +33,6 @@ def get_initial_response():
     }
     # Making the message looks good
     resp = jsonify(message)
-    # Returning the object
     return resp
 
 
@@ -56,8 +60,6 @@ def create_sensor():
             # Return Id of the newly created item
             return jsonify(str(record_created)), 201
     except:
-        # Error while trying to create the resource
-        # Add message for debugging purpose
         return "", 500
 
 
@@ -75,7 +77,6 @@ def get_sensor_data():
             # Try to convert the value to int
             query = {k: int(v) if isinstance(v, str) and v.isdigit() else v for k, v in query_params.items()}
 
-            # Fetch all the record(s)
             records_fetched = collection.find(query)
 
             # Check if the records are found
@@ -88,64 +89,42 @@ def get_sensor_data():
 
         # If dictionary is empty
         else:
-            # Return all the records as query string parameters are not available
             if collection.find().count > 0:
-                # Prepare response if the users are found
+                # Prepare response if sensor data is found
                 return dumps(collection.find())
             else:
-                # Return empty array if no users are found
+                # Return empty array if no sensor data are found
                 return jsonify([])
     except:
+        return "", 500
+
+#Generate reports
+@app.route("/api/v1/sensor/report/<int:hours>", methods=['GET'])
+def get_report_data(hours):
+    try:
+      if collection.find().count > 0:
+          gen_time = datetime.datetime.today() - datetime.timedelta(hours=hours) 
+          records = ObjectId.from_datetime(gen_time)
+          result = list(db.coll.find({"_id": {"$gte": records}}))
+
+          return dumps(collection.find({"_id": {"$gte": records}}))
+      else:
+          return jsonify([])
+    except Exception as e:
+        print e.message, e.args
         # Error while trying to fetch the resource
         # Add message for debugging purpose
         return "", 500
 
 
-@app.route("/api/v1/sensor/<sensor_id>", methods=['POST'])
-def update_sensor(sensor_id):
-    """
-       Function to update the sensor data.
-       """
-    try:
-        # Get the value which needs to be updated
-        try:
-            body = ast.literal_eval(json.dumps(request.get_json()))
-        except:
-            # Bad request as the request body is not available
-            # Add message for debugging purpose
-            return "", 400
-
-        # Updating the sensor 
-        records_updated = collection.update_one({"id": int(sensor_id)}, body)
-
-        # Check if resource is updated
-        if records_updated.modified_count > 0:
-            # Prepare the response as resource is updated successfully
-            return "", 200
-        else:
-            # Bad request as the resource is not available to update
-            # Add message for debugging purpose
-            return "", 404
-    except:
-        # Error while trying to update the resource
-        # Add message for debugging purpose
-        return "", 500
-
-
-
 @app.errorhandler(404)
 def page_not_found(e):
-    """Send message to the user with notFound 404 status."""
-    # Message to the user
     message = {
         "err":
             {
                 "msg": "This route is currently not supported. Please refer API documentation."
             }
     }
-    # Making the message looks good
     resp = jsonify(message)
-    # Sending OK response
     resp.status_code = 404
-    # Returning the object
     return resp
