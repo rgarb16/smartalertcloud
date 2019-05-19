@@ -11,6 +11,12 @@ curl -X POST   http://mysensor-db-906737534.us-east-2.elb.amazonaws.com/api/v1/s
     "geo_tag_location": 95014  
 }'    
 
+To Get the data ,i.e querying through sensor_type=humidity  
 curl  -k https://mysensor-db-906737534.us-east-2.elb.amazonaws.com/api/v1/sensor?sensor_type=humidity  
+To Get the data ,i.e querying through sensor_type=smoke  
 curl  -k https://mysensor-db-906737534.us-east-2.elb.amazonaws.com/api/v1/sensor?sensor_type=smoke  
-curl  -k https://mysensor-db-906737534.us-b.amazonaws.com/api/v1/sensor | jq .  
+To Get the data ,i.e querying all sensors  
+curl  -k https://mysensor-db-906737534.us-b.amazonaws.com/api/v1/sensor | jq .
+To grab the reports for lass 24 hrs  
+curl  -k https://mysensor-db-906737534.us-b.amazonaws.com/api/v1/sensor/reports/24 | jq .   
+
